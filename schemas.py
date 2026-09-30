@@ -35,6 +35,7 @@ class Stat(BaseModel):
 
 class StyleProfile(BaseModel):
     """Phong cách rút ra từ các file mp3 mẫu, lưu vào profiles/style_profile.json."""
+    speaker_id: str = "A" 
     source_files: list[str] = Field(default_factory=list)
     speech_rate_syll_per_sec: Optional[Stat] = None
     pitch_hz: Optional[Stat] = None
@@ -65,6 +66,7 @@ class Job(BaseModel):
 
     # A1: ảnh
     image_path: str
+    speaker_id: str = "A" 
     preprocessed_path: Optional[str] = None
 
     # A1: OCR
@@ -105,7 +107,3 @@ class Job(BaseModel):
     @classmethod
     def load(cls, path: str) -> "Job":
         return cls.model_validate_json(Path(path).read_text(encoding="utf-8"))
-
-class StyleProfile(BaseModel):
-    speaker_id: str = "A"            # "A" hoặc "B"
-    source_files: list[str] = Field(default_factory=list)   
