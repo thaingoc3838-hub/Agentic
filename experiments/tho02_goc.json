@@ -1,0 +1,21 @@
+{
+  "job_id": "tho02_goc",
+  "created_at": "2026-10-01T00:59:25.384625",
+  "status": "OCR_DONE",
+  "image_path": "data/samples\\tho02.png",
+  "preprocessed_path": null,
+  "raw_text": "Đầu lòng hai ả tố nga, (15)\nThúy Kiều là chị, em là Thúy Vân.\nMai cốt cách, tuyết tinh thần,\nMột người một vẻ, mười phân vẹn mười.\nVân xem trang trọng khác vời,\nKhuôn trăng đầy đặn, nét ngài nở nang. (20)\nHoa cười ngọc thốt đoan trang,\nMây thua nước tóc, tuyết nhường màu da.\nKiều càng sắc sảo, mặn mà,\nSo bề tài, sắc, lại là phần hơn.\nLàn thu thủy, nét xuân sơn, (25)\nHoa ghen thua thắm, liễu hờn kém xanh.\nMột, hai nghiêng nước nghiêng thành,\nSắc đành đòi một, tài đành họa hai.",
+  "title": null,
+  "uncertain_words": [],
+  "ocr_confidence": 1.0,
+  "verified_text": null,
+  "poem_type": "unknown",
+  "flags": [],
+  "plan": null,
+  "audio_path": null,
+  "style_score": null,
+  "eval_rounds": 0,
+  "drive_links": {},
+  "errors": [],
+  "retries": 0
+}

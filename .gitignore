@@ -1,0 +1,7 @@
+venv/
+.env
+token.json
+credentials.json
+__pycache__/
+outputs/
+data/style_refs/*.mp3

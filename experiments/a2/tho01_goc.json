@@ -1,0 +1,21 @@
+{
+  "job_id": "tho01_goc",
+  "created_at": "2026-10-01T00:59:25.238535",
+  "status": "VERIFIED",
+  "image_path": "data/samples\\tho01.png",
+  "preprocessed_path": null,
+  "raw_text": "Nam quốc sơn hà Nam đế cư\nTiệt nhiên phận định tại thiên thư\nNhư hà nghịch lỗ lai xâm phạm\nNhữ đẳng hành khan thủ bại hư",
+  "title": "Phiên âm Hán-Việt:",
+  "uncertain_words": [],
+  "ocr_confidence": 1.0,
+  "verified_text": "Nam quốc sơn hà Nam đế cư\nTiệt nhiên phận định tại thiên thư\nNhư hà nghịch lỗ lai xâm phạm\nNhữ đẳng hành khan thủ bại hư",
+  "poem_type": "that_ngon",
+  "flags": [],
+  "plan": null,
+  "audio_path": null,
+  "style_score": null,
+  "eval_rounds": 0,
+  "drive_links": {},
+  "errors": [],
+  "retries": 0
+}

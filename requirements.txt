@@ -1,0 +1,9 @@
+opencv-python
+librosa
+pydub
+jiwer
+pydantic
+tenacity
+python-dotenv
+numpy
+soundfile
