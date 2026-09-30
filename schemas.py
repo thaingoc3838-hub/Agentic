@@ -105,3 +105,7 @@ class Job(BaseModel):
     @classmethod
     def load(cls, path: str) -> "Job":
         return cls.model_validate_json(Path(path).read_text(encoding="utf-8"))
+
+class StyleProfile(BaseModel):
+    speaker_id: str = "A"            # "A" hoặc "B"
+    source_files: list[str] = Field(default_factory=list)   

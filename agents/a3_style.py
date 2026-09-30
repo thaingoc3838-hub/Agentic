@@ -55,7 +55,7 @@ def analyze_file(path: str) -> dict:
 
 
 if __name__ == "__main__":
-    files = sorted(glob.glob("data/style_refs/*.mp3"))[:10]    # 10 file đầu để rút style
+    files = sorted(glob.glob("data/style_refs/*.mp3"))   # 10 file đầu để rút style
     results = []
     for f in files:
         print("Đang đo", Path(f).name, flush=True)
