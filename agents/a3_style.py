@@ -14,7 +14,18 @@ def analyze_file(path: str) -> dict:
     duration = len(y) / sr
 
     # Đoạn có tiếng (bỏ khoảng lặng dưới 35 dB so với đỉnh)
-    voiced = librosa.effects.split(y, top_db=35)
+    rms = librosa.feature.rms(y=y, frame_length=2048, hop_length=512)[0]
+    db = librosa.amplitude_to_db(rms + 1e-9, ref=np.median(rms))
+    active = db > -12
+    segs, start = [], None
+    for i, a in enumerate(active):
+        if a and start is None:
+            start = i
+        elif not a and start is not None:
+            segs.append((start, i)); start = None
+    if start is not None:
+        segs.append((start, len(active)))
+    voiced = [(int(s * 512), int(e * 512)) for s, e in segs] 
     speech_time = sum(e - s for s, e in voiced) / sr
 
     # Quãng nghỉ = khoảng trống giữa các đoạn có tiếng
