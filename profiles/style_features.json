@@ -1,0 +1,122 @@
+[
+  {
+    "file": "01 Track 01.mp3",
+    "duration_s": 95.7,
+    "speech_ratio": 0.955,
+    "pause_short_ms_mean": null,
+    "pause_long_ms_mean": null,
+    "n_short_pauses": 0,
+    "n_long_pauses": 0,
+    "pitch_hz_mean": 237.7,
+    "pitch_hz_std": 93.9,
+    "energy_db_mean": -21.6
+  },
+  {
+    "file": "02 Track 02.mp3",
+    "duration_s": 297.5,
+    "speech_ratio": 0.976,
+    "pause_short_ms_mean": 209.0,
+    "pause_long_ms_mean": 3228.0,
+    "n_short_pauses": 1,
+    "n_long_pauses": 1,
+    "pitch_hz_mean": 199.4,
+    "pitch_hz_std": 76.9,
+    "energy_db_mean": -19.9
+  },
+  {
+    "file": "03 Track 03.mp3",
+    "duration_s": 192.8,
+    "speech_ratio": 0.953,
+    "pause_short_ms_mean": 395.0,
+    "pause_long_ms_mean": 3715.0,
+    "n_short_pauses": 3,
+    "n_long_pauses": 1,
+    "pitch_hz_mean": 260.8,
+    "pitch_hz_std": 86.2,
+    "energy_db_mean": -21.2
+  },
+  {
+    "file": "04 Track 04.mp3",
+    "duration_s": 296.8,
+    "speech_ratio": 0.957,
+    "pause_short_ms_mean": 372.0,
+    "pause_long_ms_mean": 2334.0,
+    "n_short_pauses": 2,
+    "n_long_pauses": 2,
+    "pitch_hz_mean": 282.8,
+    "pitch_hz_std": 85.4,
+    "energy_db_mean": -19.4
+  },
+  {
+    "file": "05 Track 05.mp3",
+    "duration_s": 252.5,
+    "speech_ratio": 0.961,
+    "pause_short_ms_mean": 209.0,
+    "pause_long_ms_mean": 1869.0,
+    "n_short_pauses": 3,
+    "n_long_pauses": 2,
+    "pitch_hz_mean": 252.5,
+    "pitch_hz_std": 88.4,
+    "energy_db_mean": -19.8
+  },
+  {
+    "file": "06 Track 06.mp3",
+    "duration_s": 332.7,
+    "speech_ratio": 0.977,
+    "pause_short_ms_mean": 290.0,
+    "pause_long_ms_mean": 1695.0,
+    "n_short_pauses": 2,
+    "n_long_pauses": 1,
+    "pitch_hz_mean": 195.7,
+    "pitch_hz_std": 72.3,
+    "energy_db_mean": -20.4
+  },
+  {
+    "file": "07 Track 07.mp3",
+    "duration_s": 257.7,
+    "speech_ratio": 0.968,
+    "pause_short_ms_mean": 348.0,
+    "pause_long_ms_mean": 2113.0,
+    "n_short_pauses": 3,
+    "n_long_pauses": 1,
+    "pitch_hz_mean": 274.2,
+    "pitch_hz_std": 76.6,
+    "energy_db_mean": -21.3
+  },
+  {
+    "file": "08 Track 08.mp3",
+    "duration_s": 241.7,
+    "speech_ratio": 0.962,
+    "pause_short_ms_mean": 720.0,
+    "pause_long_ms_mean": 4040.0,
+    "n_short_pauses": 1,
+    "n_long_pauses": 1,
+    "pitch_hz_mean": 246.6,
+    "pitch_hz_std": 69.4,
+    "energy_db_mean": -20.0
+  },
+  {
+    "file": "09 Track 09.mp3",
+    "duration_s": 185.7,
+    "speech_ratio": 0.953,
+    "pause_short_ms_mean": 534.0,
+    "pause_long_ms_mean": 2415.0,
+    "n_short_pauses": 2,
+    "n_long_pauses": 1,
+    "pitch_hz_mean": 253.1,
+    "pitch_hz_std": 87.7,
+    "energy_db_mean": -20.5
+  },
+  {
+    "file": "10 Track 10.mp3",
+    "duration_s": 188.4,
+    "speech_ratio": 0.96,
+    "pause_short_ms_mean": 255.0,
+    "pause_long_ms_mean": 3622.0,
+    "n_short_pauses": 1,
+    "n_long_pauses": 1,
+    "pitch_hz_mean": 206.7,
+    "pitch_hz_std": 81.6,
+    "energy_db_mean": -21.0
+  }
+]
