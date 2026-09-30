@@ -139,8 +139,9 @@ def run(job: Job, use_llm: bool = True) -> Job:
         job.flags = flag_lines(lines, job.poem_type)
 
         verified = text
-        if use_llm and job.flags:               # không có dòng nghi ngờ thì khỏi gọi API
-            result = _call_llm(text, job.flags, job.poem_type)
+        uncertain = [f for f in job.flags if "[?]" in f]
+        if use_llm and uncertain:               # không có dòng nghi ngờ thì khỏi gọi API
+            result = _call_llm(text, uncertain, job.poem_type)
             verified = result.get("text", text)
             # Kiểm tra an toàn: số dòng phải giữ nguyên, nếu không thì bỏ kết quả LLM
             if len([l for l in verified.splitlines() if l.strip()]) != len(lines):
