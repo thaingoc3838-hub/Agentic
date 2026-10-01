@@ -118,5 +118,53 @@
     "pitch_hz_mean": 206.7,
     "pitch_hz_std": 81.6,
     "energy_db_mean": -21.0
+  },
+  {
+    "file": "11 Track 11.mp3",
+    "duration_s": 158.9,
+    "speech_ratio": 0.874,
+    "pause_short_ms_mean": 335.0,
+    "pause_long_ms_mean": 4133.0,
+    "n_short_pauses": 12,
+    "n_long_pauses": 2,
+    "pitch_hz_mean": 253.6,
+    "pitch_hz_std": 84.1,
+    "energy_db_mean": -21.0
+  },
+  {
+    "file": "12 Track 12.mp3",
+    "duration_s": 245.3,
+    "speech_ratio": 0.898,
+    "pause_short_ms_mean": 338.0,
+    "pause_long_ms_mean": 2566.0,
+    "n_short_pauses": 13,
+    "n_long_pauses": 4,
+    "pitch_hz_mean": 287.6,
+    "pitch_hz_std": 85.3,
+    "energy_db_mean": -19.4
+  },
+  {
+    "file": "13 Track 13.mp3",
+    "duration_s": 203.5,
+    "speech_ratio": 0.903,
+    "pause_short_ms_mean": 307.0,
+    "pause_long_ms_mean": 1788.0,
+    "n_short_pauses": 14,
+    "n_long_pauses": 3,
+    "pitch_hz_mean": 259.1,
+    "pitch_hz_std": 87.4,
+    "energy_db_mean": -21.2
+  },
+  {
+    "file": "14 Track 14.mp3",
+    "duration_s": 333.1,
+    "speech_ratio": 0.926,
+    "pause_short_ms_mean": 368.0,
+    "pause_long_ms_mean": 2327.0,
+    "n_short_pauses": 12,
+    "n_long_pauses": 5,
+    "pitch_hz_mean": 219.4,
+    "pitch_hz_std": 84.6,
+    "energy_db_mean": -19.9
   }
 ]
