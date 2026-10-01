@@ -1,0 +1,29 @@
+{
+  "speaker_id": "A",
+  "source_files": [
+    "04 Track 04.mp3",
+    "05 Track 05.mp3",
+    "08 Track 08.mp3",
+    "09 Track 09.mp3",
+    "12 Track 12.mp3",
+    "13 Track 13.mp3"
+  ],
+  "speech_rate_syll_per_sec": null,
+  "pitch_hz": {
+    "mean": 256.1,
+    "std": 15.74456696415907
+  },
+  "pause_line_ms": {
+    "mean": 356.5,
+    "std": 35.19824806246281
+  },
+  "pause_stanza_ms": {
+    "mean": 2387.5,
+    "std": 576.0172885136927
+  },
+  "energy_db": {
+    "mean": -19.9,
+    "std": 0.6370504951205466
+  },
+  "description_vi": "(điền sau khi Gemini nghe và mô tả)"
+}
