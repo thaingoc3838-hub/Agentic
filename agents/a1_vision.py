@@ -15,7 +15,7 @@ from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponen
 from schemas import Job, Status
 
 load_dotenv()
-MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 PROMPT = """Bạn là chuyên gia đọc chữ viết tay tiếng Việt. Ảnh là một bài thơ viết tay.
 Hãy chép lại nội dung ảnh thành văn bản, tuân thủ nghiêm ngặt:
