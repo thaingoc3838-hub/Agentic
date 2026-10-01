@@ -5,3 +5,7 @@ credentials.json
 __pycache__/
 outputs/
 data/style_refs/*.mp3
+cache/
+venv_tts/
+data/ref/
+outputs/
