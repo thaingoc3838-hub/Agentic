@@ -12,7 +12,7 @@ def norm(text: str) -> str:
     return "\n".join(ln for ln in lines if ln)
 
 
-images = sorted(glob.glob("data/samples/*.png") + glob.glob("data/samples/*.jpg"))
+images = ["data/samples/tho01.png"]
 print(f"{'Ảnh':<10}{'CER gốc':>10}{'CER xử lý':>12}")
 
 for img in images:

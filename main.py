@@ -2,10 +2,10 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from agents import a1_vision, a2_verifier, a5_run
+from agents import a1_vision, a2_verifier, a5_run, a7_drive
 from schemas import Job, Status
 
-STEPS = [a1_vision.run, a2_verifier.run, a5_run.run]
+STEPS = [a1_vision.run, a2_verifier.run, a5_run.run, a7_drive.run]
 
 
 def run_pipeline(image_path: str, speaker: str = "A") -> Job:

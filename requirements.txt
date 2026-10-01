@@ -7,3 +7,4 @@ tenacity
 python-dotenv
 numpy
 soundfile
+scikit-learn
