@@ -88,7 +88,7 @@ class Job(BaseModel):
 
     # A6: đánh giá
     style_score: Optional[float] = None
-    eval_rounds: int = 0
+    eval_detail: dict = Field(default_factory=dict)
 
     # A7: Drive
     drive_links: dict[str, str] = Field(default_factory=dict)
