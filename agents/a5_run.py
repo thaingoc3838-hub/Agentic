@@ -19,7 +19,9 @@ def run(job: Job) -> Job:
         env = {**os.environ, "PYTHONIOENCODING": "utf-8"}   # tránh lỗi tiếng Việt khi in
         r = subprocess.run(
             [str(TTS_PYTHON), "agents/a5_synth.py", str(poem_file),
-             REF[job.speaker_id], str(out)],
+             REF[job.speaker_id], str(out),
+             str(job.plan_params.get("pause_line_ms", 360)),
+             str(job.plan_params.get("pause_stanza_ms", 1800))],
             capture_output=True, text=True, encoding="utf-8", env=env,
         )
         if r.returncode != 0:

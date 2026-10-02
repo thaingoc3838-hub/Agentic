@@ -89,6 +89,7 @@ class Job(BaseModel):
     # A6: đánh giá
     style_score: Optional[float] = None
     eval_detail: dict = Field(default_factory=dict)
+    plan_params: dict = Field(default_factory=dict)   # tham số trình diễn do A4 quyết địn
 
     # A7: Drive
     drive_links: dict[str, str] = Field(default_factory=dict)

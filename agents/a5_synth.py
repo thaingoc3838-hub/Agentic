@@ -33,4 +33,7 @@ def synth_poem(text: str, ref_audio: str, out_path: str,
 
 if __name__ == "__main__":
     poem_file, ref, out = sys.argv[1], sys.argv[2], sys.argv[3]
-    synth_poem(open(poem_file, encoding="utf-8").read(), ref, out)
+    pl = int(float(sys.argv[4])) if len(sys.argv) > 4 else 360
+    ps = int(float(sys.argv[5])) if len(sys.argv) > 5 else 1800
+    synth_poem(open(poem_file, encoding="utf-8").read(), ref, out,
+               pause_line_ms=pl, pause_stanza_ms=ps)
