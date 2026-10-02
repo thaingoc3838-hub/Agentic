@@ -17,7 +17,7 @@ METRICS = {
     "energy_db_mean": 1.0,
     "pitch_hz_std": 8.0,
 }
-
+SCORED = ("pause_short_ms_mean", "pause_long_ms_mean", "pitch_hz_std")   # tính vào điểm
 
 def _is_holdout(name: str) -> bool:
     return name.startswith(HOLDOUT_PREFIX)
@@ -38,10 +38,12 @@ def reference_stats() -> dict:
 
 
 def score_features(feat: dict, stats: dict | None = None) -> tuple[float, dict]:
-    """Điểm 0-1 (1 = giống mẫu). Mỗi chỉ số lệch 3 độ lệch chuẩn thì điểm 0."""
+    """Điểm 0-1 (1 = giống mẫu). Chỉ các chỉ số trong SCORED được tính vào điểm,
+    các chỉ số còn lại vẫn in ra trong detail để quan sát."""
     stats = stats or reference_stats()
     detail, scores = {}, []
     for key, st in stats.items():
+        counted = key in SCORED
         val = feat.get(key)
         if val is None:
             if key == "pause_short_ms_mean":         # không có nghỉ giữa dòng là lỗi
@@ -51,10 +53,12 @@ def score_features(feat: dict, stats: dict | None = None) -> tuple[float, dict]:
                 detail[key] = {"value": None, "target": st["target"], "score": None}
             continue
         z = abs(val - st["target"]) / st["scale"]
-        s = max(0.0, 1.0 - z / 3.0)
+        s = 1.0 / (1.0 + z)                          # liên tục, không bao giờ về 0 hẳn
         detail[key] = {"value": val, "target": round(st["target"], 1),
-                       "delta": round(val - st["target"], 1), "score": round(s, 3)}
-        scores.append(s)
+                       "delta": round(val - st["target"], 1),
+                       "score": round(s, 3), "counted": counted}
+        if counted:
+            scores.append(s)
     return (round(float(np.mean(scores)), 3) if scores else 0.0), detail
 
 
