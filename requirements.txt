@@ -13,3 +13,5 @@ langchain-google-genai
 langgraph
 langsmith
 streamlit
+matplotlib
+plotly
