@@ -1,15 +1,14 @@
-"""a2_verifier.py - Tác nhân A2: kiểm lỗi, nhận diện thể thơ (M3)."""
+"""a2_verifier.py - Tác nhân A2: kiểm lỗi, nhận diện thể thơ (M3) sử dụng LangChain."""
 import hashlib
 import json
 import os
 import re
-
 from pathlib import Path
 
 from dotenv import load_dotenv
-from google import genai
-from google.genai import errors as genai_errors
-from google.genai import types
+from pydantic import BaseModel, Field
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
 
 from schemas import Job, PoemType, Status
 
@@ -22,6 +21,8 @@ CACHE_DIR = Path("cache/verify")
 def strip_line_numbers(text: str) -> str:
     """Bỏ số thứ tự dòng như (15), (20) do OCR đọc từ lề bài thơ."""
     return re.sub(r"[ \t]*\(\s*\d+\s*\)", "", text)
+
+
 def split_stanzas(text: str) -> list[list[str]]:
     """Tách văn bản thành các khổ (ngăn cách bằng dòng trống)."""
     stanzas, cur = [], []
@@ -79,27 +80,33 @@ def flag_lines(lines: list[str], poem_type: PoemType) -> list[str]:
     return flags
 
 
-# ---------------- Lớp 2: LLM sửa có kiểm soát ----------------
-PROMPT = """Bạn là biên tập viên thơ Việt. Dưới đây là văn bản OCR từ bài thơ viết tay,
+# ---------------- Lớp 2: LLM sửa có kiểm soát (LangChain + Pydantic) ----------------
+class ChangeItem(BaseModel):
+    before: str = Field(description="Dòng gốc bị nghi ngờ")
+    after: str = Field(description="Dòng sau khi sửa")
+
+
+class VerificationOutput(BaseModel):
+    text: str = Field(description="Toàn bộ văn bản sau khi sửa lỗi, giữ nguyên định dạng xuống dòng và các dòng không sửa")
+    changes: list[ChangeItem] = Field(default_factory=list, description="Danh sách các dòng đã sửa")
+
+
+SYSTEM_PROMPT = """Bạn là biên tập viên thơ Việt. Dưới đây là văn bản OCR từ bài thơ viết tay,
 kèm danh sách dòng nghi ngờ. Nhiệm vụ: chỉ sửa các dòng nghi ngờ, và CHỈ khi chắc chắn
 đó là lỗi nhận dạng (chữ bị đọc nhầm, thiếu dấu, dòng lệch số tiếng do đọc sót chữ).
 Quy tắc:
 1. KHÔNG sáng tác, KHÔNG viết lại cho hay hơn, KHÔNG đụng tới dòng không bị nghi ngờ.
 2. Giữ nguyên số dòng, thứ tự dòng và các dòng trống giữa khổ.
 3. Nếu không chắc, giữ nguyên dòng đó.
-4. Với mỗi dòng đã sửa, ghi lại bản gốc và bản sửa.
+4. Với mỗi dòng đã sửa, ghi lại bản gốc và bản sửa."""
 
-Thể thơ dự đoán: {poem_type}
+HUMAN_PROMPT = """Thể thơ dự đoán: {poem_type}
 
 Văn bản OCR:
 {text}
 
 Dòng nghi ngờ:
-{flags}
-
-Chỉ trả về JSON:
-{{"text": "văn bản sau khi sửa", "changes": [{{"before": "...", "after": "..."}}]}}
-"""
+{flags}"""
 
 
 class QuotaExceeded(Exception):
@@ -107,27 +114,36 @@ class QuotaExceeded(Exception):
 
 
 def _call_llm(text: str, flags: list[str], poem_type: PoemType) -> dict:
-    prompt = PROMPT.format(poem_type=poem_type.value, text=text, flags="\n".join(flags))
-    key = hashlib.sha256((prompt + MODEL).encode()).hexdigest()[:24]
+    joined_flags = ":".join(flags)
+    key_str = f"{poem_type.value}:{text}:{joined_flags}:{MODEL}"
+    key = hashlib.sha256(key_str.encode("utf-8")).hexdigest()[:24]
     cache_file = CACHE_DIR / f"{key}.json"
     if cache_file.exists():
         return json.loads(cache_file.read_text(encoding="utf-8"))   # 0 lượt API
 
-    client = genai.Client(
-        api_key=os.getenv("GEMINI_API_KEY"),
-        http_options=types.HttpOptions(retry_options=types.HttpRetryOptions(attempts=1)),
-    )
     try:
-        resp = client.models.generate_content(
-            model=MODEL, contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json", temperature=0),
+        llm = ChatGoogleGenerativeAI(
+            model=MODEL,
+            temperature=0,
+            api_key=os.getenv("GEMINI_API_KEY"),
         )
-    except genai_errors.APIError as e:
-        if e.code == 429:
+        structured_llm = llm.with_structured_output(VerificationOutput)
+        prompt_tmpl = ChatPromptTemplate.from_messages([
+            ("system", SYSTEM_PROMPT),
+            ("human", HUMAN_PROMPT),
+        ])
+        chain = prompt_tmpl | structured_llm
+        output: VerificationOutput = chain.invoke({
+            "poem_type": poem_type.value,
+            "text": text,
+            "flags": "\n".join(flags),
+        })
+        result = output.model_dump()
+    except Exception as e:
+        if "429" in str(e) or "ResourceExhausted" in type(e).__name__:
             raise QuotaExceeded("Hết hạn mức Gemini (429).") from e
         raise
-    result = json.loads(resp.text)
+
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache_file.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     return result

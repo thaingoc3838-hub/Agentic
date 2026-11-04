@@ -8,3 +8,8 @@ python-dotenv
 numpy
 soundfile
 scikit-learn
+langchain-core
+langchain-google-genai
+langgraph
+langsmith
+streamlit

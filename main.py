@@ -1,31 +1,56 @@
+"""main.py - Điểm khởi chạy pipeline Multi-Agent xử lý và trình diễn thơ Việt."""
 import sys
-from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
 
-from agents import a1_vision, a2_verifier, a5_run, a7_drive
+# Luôn load biến môi trường đầu tiên để bật LangSmith Tracing
+load_dotenv()
+
 from schemas import Job, Status
-
-STEPS = [a1_vision.run, a2_verifier.run, a5_run.run, a7_drive.run]
-
-
-def run_pipeline(image_path: str, speaker: str = "A") -> Job:
-    job_id = f"{datetime.now():%Y%m%d_%H%M%S}_{Path(image_path).stem}"
-    job = Job(job_id=job_id, image_path=image_path, speaker_id=speaker)
-    for step in STEPS:
-        print(f"-> {step.__module__}", flush=True)
-        job = step(job)
-        job.save()                       # lưu state sau mỗi bước
-        if job.status == Status.FAILED:
-            break
-    return job
+from workflow import run_pipeline
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Sử dụng: python main.py <đường_dẫn_ảnh> [speaker_id: A hoặc B] [--interactive]")
+        print("Ví dụ  : python main.py data/samples/tho01.png A")
+        print("Ví dụ  : python main.py data/samples/tho01.png A --interactive")
+        sys.exit(1)
+
     img = sys.argv[1]
-    spk = sys.argv[2] if len(sys.argv) > 2 else "A"
-    job = run_pipeline(img, spk)
-    print("Trạng thái:", job.status.value)
-    print("Thể thơ:", job.poem_type.value, "| Cờ:", len(job.flags))
-    print("Audio:", job.audio_path)
-    for e in job.errors:
-        print("LỖI:", e)
+    spk = "A"
+    interactive = False
+
+    for arg in sys.argv[2:]:
+        if arg in ("--interactive", "-i"):
+            interactive = True
+        elif arg in ("A", "B"):
+            spk = arg
+
+    print("=" * 60)
+    print(" BẮT ĐẦU PIPELINE MULTI-AGENT (LANGGRAPH + LANGCHAIN)")
+    print(f" Ảnh đầu vào      : {img}")
+    print(f" Người ngâm       : {spk}")
+    print(f" Human-in-the-Loop: {'BẬT (sẽ dừng duyệt bài thơ)' if interactive else 'TẮT (tự động 100%)'}")
+    print("=" * 60)
+
+    job = run_pipeline(img, spk, interactive=interactive)
+
+    print("\n" + "=" * 60)
+    print(" KẾT QUẢ THỰC THI PIPELINE")
+    print("=" * 60)
+    print(f" Trạng thái cuối: {job.status.value}")
+    print(f" Thể thơ        : {job.poem_type.value}")
+    print(f" Cảm xúc bài thơ: {job.emotion}")
+    print(f" Tốc độ ngâm    : {job.speech_rate}x | Cao độ: {job.pitch_shift:+0.1f}st")
+    print(f" Số dòng nghi ngờ: {len(job.flags)}")
+    print(f" Số vòng lặp A4  : {job.retries}")
+    print(f" Điểm phong cách : {job.style_score}")
+    print(f" File audio sinh : {job.audio_path}")
+    if job.drive_links:
+        print(f" Google Drive    : {job.drive_links}")
+    if job.errors:
+        print(" Danh sách lỗi   :")
+        for e in job.errors:
+            print(f"   [!] {e}")
+    print("=" * 60)

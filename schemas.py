@@ -13,7 +13,8 @@ class Status(str, Enum):
     PREPROCESSED = "PREPROCESSED"    # A1 xong tiền xử lý ảnh
     OCR_DONE = "OCR_DONE"            # A1 xong đọc chữ
     VERIFIED = "VERIFIED"            # A2 xong kiểm lỗi
-    PLANNED = "PLANNED"              # A4 xong kịch bản trình diễn
+    WAITING_HUMAN = "WAITING_HUMAN"  # Dừng chờ người dùng duyệt/chỉnh sửa
+    PLANNED = "PLANNED"              # A4 xong kịch bản trình diễn & cảm xúc
     SYNTHESIZED = "SYNTHESIZED"      # A5 xong sinh audio
     EVALUATED = "EVALUATED"          # A6 xong chấm style
     DONE = "DONE"                    # A7 xong upload Drive
@@ -80,8 +81,13 @@ class Job(BaseModel):
     poem_type: PoemType = PoemType.UNKNOWN
     flags: list[str] = Field(default_factory=list)   # các dòng nghi OCR sai
 
-    # A4: kịch bản
+    # A4: kịch bản, nhịp điệu & sắc thái cảm xúc
     plan: Optional[PerformancePlan] = None
+    emotion: Optional[str] = None                    # ví dụ: 'Trầm lắng, u hoài', 'Hào sảng, hào hùng', ...
+    emotion_reasoning: Optional[str] = None          # lý do LLM nhận định cảm xúc
+    speech_rate: float = 1.0                         # hệ số tốc độ (vd: 0.9 = chậm rãi, 1.05 = nhanh)
+    pitch_shift: float = 0.0                         # dịch cao độ (semitones, vd: -1.0st, +0.5st)
+    plan_params: dict = Field(default_factory=dict)  # tham số ngắt nghỉ (pause_line_ms, pause_stanza_ms)
 
     # A5: audio
     audio_path: Optional[str] = None
@@ -89,7 +95,6 @@ class Job(BaseModel):
     # A6: đánh giá
     style_score: Optional[float] = None
     eval_detail: dict = Field(default_factory=dict)
-    plan_params: dict = Field(default_factory=dict)   # tham số trình diễn do A4 quyết địn
 
     # A7: Drive
     drive_links: dict[str, str] = Field(default_factory=dict)
@@ -97,6 +102,7 @@ class Job(BaseModel):
     # Theo dõi lỗi
     errors: list[str] = Field(default_factory=list)
     retries: int = 0
+    eval_rounds: int = 0
 
     def save(self, folder: str = "outputs") -> Path:
         """Ghi state ra file JSON để chạy lại từ bước lỗi."""

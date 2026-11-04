@@ -1,11 +1,12 @@
 {
   "job_id": "tho01_xu_ly",
-  "created_at": "2026-10-01T00:59:25.240100",
+  "created_at": "2026-11-04T20:58:10.597325",
   "status": "OCR_DONE",
-  "image_path": "data/samples\\tho01.png",
+  "image_path": "data/samples/tho01.png",
+  "speaker_id": "A",
   "preprocessed_path": "outputs\\tho01_clean.png",
-  "raw_text": "Nam quốc sơn hà Nam đế cư\nTiệt nhiên phận định tại thiên thư\nNhư hà nghịch lỗ lai xâm phạm\nNhư đảng hành khan thủ bại hư",
-  "title": "Phiên âm Hán-Việt:",
+  "raw_text": "Nam quốc sơn hà Nam đế cư\nTiệt nhiên phận định tại thiên thư\nNhư hà nghịch lỗ lai xâm phạm\nNhư đẳng hành khan thủ bại hư",
+  "title": null,
   "uncertain_words": [],
   "ocr_confidence": 1.0,
   "verified_text": null,
@@ -14,8 +15,10 @@
   "plan": null,
   "audio_path": null,
   "style_score": null,
-  "eval_rounds": 0,
+  "eval_detail": {},
+  "plan_params": {},
   "drive_links": {},
   "errors": [],
-  "retries": 0
+  "retries": 0,
+  "eval_rounds": 0
 }

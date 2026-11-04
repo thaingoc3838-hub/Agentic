@@ -19,5 +19,6 @@
   "plan_params": {},
   "drive_links": {},
   "errors": [],
-  "retries": 0
+  "retries": 0,
+  "eval_rounds": 0
 }

@@ -1,21 +1,23 @@
-"""a1_vision.py - Tác nhân A1: tiền xử lý ảnh (M1) + đọc chữ viết tay (M2)."""
+"""a1_vision.py - Tác nhân A1: tiền xử lý ảnh (M1) + đọc chữ viết tay (M2) bằng LangChain Multimodal."""
+import base64
+import hashlib
 import json
 import os
 from pathlib import Path
+from typing import Optional
 
 import cv2
 import numpy as np
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
-import hashlib
-
-from google.genai import errors as genai_errors
+from pydantic import BaseModel, Field
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import HumanMessage
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
+
 from schemas import Job, Status
 
 load_dotenv()
-MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 PROMPT = """Bạn là chuyên gia đọc chữ viết tay tiếng Việt. Ảnh là một bài thơ viết tay.
 Hãy chép lại nội dung ảnh thành văn bản, tuân thủ nghiêm ngặt:
@@ -24,9 +26,6 @@ Hãy chép lại nội dung ảnh thành văn bản, tuân thủ nghiêm ngặt:
 3. Giữ đúng dấu thanh tiếng Việt. KHÔNG sửa lỗi chính tả, KHÔNG sáng tác, KHÔNG thêm bớt chữ.
 4. Chữ nào không đọc chắc chắn thì viết đúng phần đọc được và đánh dấu [?] ngay sau chữ đó, không đoán bừa.
 5. Nếu có tiêu đề, tách riêng ra trường "title"; nếu không có thì để chuỗi rỗng.
-
-Chỉ trả về JSON đúng dạng:
-{"title": "...", "text": "các dòng thơ, ngăn cách bằng \\n", "uncertain_words": ["..."]}
 """
 
 
@@ -98,8 +97,14 @@ def preprocess(image_path: str, out_dir: str = "outputs") -> str:
     return out_path
 
 
-# ---------------- M2: OCR bằng Gemini (có cache, không retry 429) ----------------
+# ---------------- M2: OCR bằng LangChain Gemini (có cache) ----------------
 CACHE_DIR = Path("cache/ocr")
+
+
+class OCRResult(BaseModel):
+    title: str = Field(default="", description="Tiêu đề bài thơ nếu có; nếu không có thì để chuỗi rỗng")
+    text: str = Field(description="Nội dung bài thơ chép lại, giữ NGUYÊN cách xuống dòng như bản gốc, mỗi dòng thơ một dòng")
+    uncertain_words: list[str] = Field(default_factory=list, description="Danh sách các chữ không đọc chắc chắn kèm dấu [?]")
 
 
 class QuotaExceeded(Exception):
@@ -110,14 +115,12 @@ def _is_transient(exc: BaseException) -> bool:
     """Chỉ thử lại lỗi tạm thời (server quá tải, mạng). KHÔNG thử lại 429."""
     if isinstance(exc, QuotaExceeded):
         return False
-    if isinstance(exc, genai_errors.APIError):
-        return exc.code in (500, 502, 503, 504)
+    if "429" in str(exc) or "ResourceExhausted" in type(exc).__name__:
+        return False
     return isinstance(exc, (ConnectionError, TimeoutError))
 
 
 def _cache_path(image_bytes: bytes) -> Path:
-    # Khóa cache gồm: nội dung ảnh + tên model + prompt.
-    # Đổi ảnh, model hoặc prompt thì tự gọi lại API.
     key = hashlib.sha256(image_bytes + MODEL.encode() + PROMPT.encode()).hexdigest()[:24]
     return CACHE_DIR / f"{key}.json"
 
@@ -125,27 +128,31 @@ def _cache_path(image_bytes: bytes) -> Path:
 @retry(retry=retry_if_exception(_is_transient), stop=stop_after_attempt(3),
        wait=wait_exponential(min=2, max=20), reraise=True)
 def _call_gemini(image_path: str, image_bytes: bytes) -> dict:
-    client = genai.Client(
-        api_key=os.getenv("GEMINI_API_KEY"),
-        # Tắt retry ngầm của thư viện, vì nó cũng đốt thêm lượt hạn mức
-        http_options=types.HttpOptions(retry_options=types.HttpRetryOptions(attempts=1)),
-    )
     mime = "image/png" if image_path.lower().endswith(".png") else "image/jpeg"
+    b64 = base64.b64encode(image_bytes).decode("utf-8")
+    data_url = f"data:{mime};base64,{b64}"
+
     try:
-        resp = client.models.generate_content(
+        llm = ChatGoogleGenerativeAI(
             model=MODEL,
-            contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime), PROMPT],
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json", temperature=0
-            ),
+            temperature=0,
+            api_key=os.getenv("GEMINI_API_KEY"),
         )
-    except genai_errors.APIError as e:
-        if e.code == 429:
+        structured_llm = llm.with_structured_output(OCRResult)
+        message = HumanMessage(
+            content=[
+                {"type": "text", "text": PROMPT},
+                {"type": "image_url", "image_url": {"url": data_url}},
+            ]
+        )
+        output: OCRResult = structured_llm.invoke([message])
+        return output.model_dump()
+    except Exception as e:
+        if "429" in str(e) or "ResourceExhausted" in type(e).__name__:
             raise QuotaExceeded(
                 "Hết hạn mức Gemini (429). Đổi GEMINI_MODEL hoặc chờ sang ngày mới."
             ) from e
         raise
-    return json.loads(resp.text)
 
 
 def ocr(image_path: str, use_cache: bool = True) -> dict:
@@ -160,6 +167,7 @@ def ocr(image_path: str, use_cache: bool = True) -> dict:
     cache_file.write_text(json.dumps(result, ensure_ascii=False, indent=2),
                           encoding="utf-8")
     return result
+
 
 # ---------------- Hàm chạy trong pipeline ----------------
 def run(job: Job, use_preprocessed: bool = True) -> Job:
@@ -179,7 +187,7 @@ def run(job: Job, use_preprocessed: bool = True) -> Job:
         words = max(len(job.raw_text.split()), 1)
         job.ocr_confidence = round(1 - len(job.uncertain_words) / words, 3)
         job.status = Status.OCR_DONE
-    except Exception as e:  # Orchestrator sẽ quyết định retry hay dừng
+    except Exception as e:
         job.errors.append(f"A1: {type(e).__name__}: {e}")
         job.status = Status.FAILED
     return job

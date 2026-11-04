@@ -1,4 +1,4 @@
-"""a5_run.py - Cầu nối: gọi a5_synth.py bằng Python của venv_tts."""
+"""a5_run.py - Cầu nối: gọi a5_synth.py bằng Python của venv_tts và áp dụng điều chỉnh cảm xúc."""
 import os
 import subprocess
 from pathlib import Path
@@ -42,6 +42,21 @@ def run(job: Job) -> Job:
         )
         if r.returncode != 0:
             raise RuntimeError(r.stderr[-500:])
+
+        # Áp dụng hậu xử lý âm học theo sắc thái cảm xúc từ A4 (Pitch Shift & Speech Rate)
+        if (job.pitch_shift != 0.0 or job.speech_rate != 1.0) and out.exists():
+            try:
+                import librosa
+                import soundfile as sf
+                y, sr = librosa.load(str(out), sr=None)
+                if job.pitch_shift != 0.0:
+                    y = librosa.effects.pitch_shift(y, sr=sr, n_steps=job.pitch_shift)
+                if job.speech_rate != 1.0 and 0.5 <= job.speech_rate <= 2.0:
+                    y = librosa.effects.time_stretch(y, rate=job.speech_rate)
+                sf.write(str(out), y, sr)
+            except Exception as pe:
+                print(f"[A5 Warning] Lỗi điều chỉnh cao độ/tốc độ: {pe}", flush=True)
+
         job.audio_path = str(out)
         job.status = Status.SYNTHESIZED
     except Exception as e:
