@@ -2,6 +2,8 @@
 import hashlib
 import json
 import os
+import re
+
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -17,6 +19,9 @@ CACHE_DIR = Path("cache/verify")
 
 
 # ---------------- Lớp 1: luật bằng code ----------------
+def strip_line_numbers(text: str) -> str:
+    """Bỏ số thứ tự dòng như (15), (20) do OCR đọc từ lề bài thơ."""
+    return re.sub(r"[ \t]*\(\s*\d+\s*\)", "", text)
 def split_stanzas(text: str) -> list[list[str]]:
     """Tách văn bản thành các khổ (ngăn cách bằng dòng trống)."""
     stanzas, cur = [], []
@@ -131,7 +136,7 @@ def _call_llm(text: str, flags: list[str], poem_type: PoemType) -> dict:
 # ---------------- Hàm chạy trong pipeline ----------------
 def run(job: Job, use_llm: bool = True) -> Job:
     try:
-        text = job.raw_text or ""
+        text = strip_line_numbers(job.raw_text or "")
         stanzas = split_stanzas(text)
         lines = [ln for st in stanzas for ln in st]
 

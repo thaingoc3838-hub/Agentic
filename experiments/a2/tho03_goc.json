@@ -3,6 +3,7 @@
   "created_at": "2026-10-01T00:59:25.634206",
   "status": "VERIFIED",
   "image_path": "data/samples\\tho03.png",
+  "speaker_id": "A",
   "preprocessed_path": null,
   "raw_text": "Sao anh không về chơi thôn Vĩ?\nNhìn nắng hàng cau nắng mới lên.\nVườn ai mướt quá xanh như ngọc\nLá trúc che ngang mặt chữ điền.\n\nGió theo lối gió, mây đường mây,\nDòng nước buồn thiu, hoa bắp lay...\nThuyền ai đậu bến sông trăng đó,\nCó chở trăng về kịp tối nay?\n\nMơ khách đường xa, khách đường xa\nÁo em trắng quá nhìn không ra...\nỞ đây sương khói mờ nhân ảnh\nAi biết tình ai có đậm đà?",
   "title": "Đây thôn Vĩ Dạ – Hàn Mặc Tử",
@@ -14,7 +15,8 @@
   "plan": null,
   "audio_path": null,
   "style_score": null,
-  "eval_rounds": 0,
+  "eval_detail": {},
+  "plan_params": {},
   "drive_links": {},
   "errors": [],
   "retries": 0

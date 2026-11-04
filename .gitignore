@@ -10,3 +10,4 @@ venv_tts/
 data/ref/
 outputs/credentials.json
 token.json
+*.wav
