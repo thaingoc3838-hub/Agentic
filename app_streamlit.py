@@ -194,8 +194,48 @@ def plot_waveform_and_pitch(audio_path: str):
 st.sidebar.image("https://img.icons8.com/isometric/100/scroll.png", width=70)
 st.sidebar.title("Cấu hình Pipeline")
 
-speaker = st.sidebar.radio("Chọn giọng ngâm thơ mẫu:", ["A (Nữ - Truyền cảm)", "B (Nam - Trầm ấm)"], index=0)
-speaker_id = "A" if "A" in speaker else "B"
+speaker = st.sidebar.radio(
+    "Chọn giọng ngâm thơ mẫu:",
+    [
+        "A (Nữ - Truyền cảm)",
+        "B (Nam - Trầm ấm)",
+        "🎙️ Giọng Tùy Chọn (Voice Cloning)"
+    ],
+    index=0
+)
+
+custom_ref_path = st.session_state.get("custom_ref_path")
+if "Voice Cloning" in speaker:
+    speaker_id = "CUSTOM"
+    st.sidebar.markdown("##### 🎙️ Nạp giọng mẫu (5-15 giây)")
+    voice_mode = st.sidebar.radio("Nguồn âm thanh:", ["Tải file lên", "Ghi âm trực tiếp"], horizontal=True)
+    if voice_mode == "Tải file lên":
+        ref_file = st.sidebar.file_uploader("File âm thanh mẫu (.wav, .mp3):", type=["wav", "mp3", "m4a", "ogg"])
+        if ref_file is not None:
+            voice_dir = Path("outputs/custom_voices")
+            voice_dir.mkdir(parents=True, exist_ok=True)
+            saved_voice = voice_dir / ref_file.name
+            with open(saved_voice, "wb") as f:
+                f.write(ref_file.getbuffer())
+            custom_ref_path = str(saved_voice)
+            st.session_state.custom_ref_path = custom_ref_path
+            st.sidebar.audio(ref_file)
+            st.sidebar.success("✅ Đã nạp file giọng thành công!")
+    else:
+        rec_voice = st.sidebar.audio_input("Nói 5-10 giây vào micro:")
+        if rec_voice is not None:
+            voice_dir = Path("outputs/custom_voices")
+            voice_dir.mkdir(parents=True, exist_ok=True)
+            saved_voice = voice_dir / "recorded_voice.wav"
+            with open(saved_voice, "wb") as f:
+                f.write(rec_voice.getbuffer())
+            custom_ref_path = str(saved_voice)
+            st.session_state.custom_ref_path = custom_ref_path
+            st.sidebar.success("✅ Đã thu âm giọng của bạn thành công!")
+else:
+    speaker_id = "A" if "A" in speaker else "B"
+    custom_ref_path = None
+    st.session_state.custom_ref_path = None
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Giám sát & Thực nghiệm")
@@ -267,7 +307,11 @@ with tab1:
 
             if btn_step1:
                 with st.spinner("Đang chạy Tác nhân A1 (Preprocess + OCR) và A2 (Kiểm luật thơ)..."):
-                    job = step_until_human_review(st.session_state.image_path, speaker=speaker_id)
+                    job = step_until_human_review(
+                        st.session_state.image_path,
+                        speaker=speaker_id,
+                        custom_ref_audio=st.session_state.get("custom_ref_path")
+                    )
                     st.session_state.current_job = job
 
             job: Job = st.session_state.current_job
@@ -333,7 +377,8 @@ with tab1:
                             job,
                             edited_text=edited_poem,
                             custom_speech_rate=custom_rate,
-                            custom_pitch_shift=custom_pitch
+                            custom_pitch_shift=custom_pitch,
+                            custom_ref_audio=st.session_state.get("custom_ref_path")
                         )
                         st.session_state.current_job = final_job
                         st.success("Đã hoàn thành toàn bộ quy trình ngâm thơ!")

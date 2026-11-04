@@ -1,4 +1,4 @@
-"""a5_run.py - Cầu nối: gọi a5_synth.py bằng Python của venv_tts và áp dụng điều chỉnh cảm xúc."""
+"""a5_run.py - Cầu nối: gọi a5_synth.py bằng Python của venv_tts và áp dụng điều chỉnh cảm xúc & clone giọng tùy ý."""
 import os
 import subprocess
 from pathlib import Path
@@ -22,6 +22,22 @@ def _pause(job: Job, key: str) -> str:
     return str(job.plan_params.get(key, DEFAULT_PAUSES[key]))
 
 
+def _resolve_ref_audio(job: Job) -> str:
+    """Xác định file âm thanh mẫu: hỗ trợ Zero-shot Voice Cloning từ file tải lên hoặc ghi âm."""
+    if job.custom_ref_audio and Path(job.custom_ref_audio).exists():
+        custom_path = Path(job.custom_ref_audio)
+        # Chuẩn hóa về file .wav 48kHz nếu là định dạng khác (mp3, ogg, m4a)
+        if not custom_path.suffix.lower() == ".wav":
+            import librosa
+            import soundfile as sf
+            wav_path = Path("outputs") / f"{job.job_id}_custom_ref.wav"
+            y, sr = librosa.load(str(custom_path), sr=48000)
+            sf.write(str(wav_path), y, sr)
+            return str(wav_path)
+        return str(custom_path)
+    return REF.get(job.speaker_id, REF["A"])
+
+
 def run(job: Job) -> Job:
     try:
         Path("outputs").mkdir(exist_ok=True)
@@ -29,10 +45,13 @@ def run(job: Job) -> Job:
         poem_file.write_text(job.verified_text or "", encoding="utf-8")
         out = Path("outputs") / f"{job.job_id}.wav"
 
+        ref_audio = _resolve_ref_audio(job)
+        print(f"[A5 Synthesis] Sử dụng mẫu giọng: {ref_audio}", flush=True)
+
         env = {**os.environ, "PYTHONIOENCODING": "utf-8"}   # tránh lỗi tiếng Việt khi in
         r = subprocess.run(
             [str(TTS_PYTHON), "agents/a5_synth.py", str(poem_file),
-             REF[job.speaker_id], str(out),
+             ref_audio, str(out),
              _pause(job, "pause_line_ms"),
              _pause(job, "pause_stanza_ms"),
              _pause(job, "pause_clause_ms"),

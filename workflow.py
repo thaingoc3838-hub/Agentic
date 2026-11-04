@@ -204,15 +204,15 @@ def create_poetry_graph():
 app_workflow = create_poetry_graph()
 
 
-def run_pipeline(image_path: str, speaker: str = "A", interactive: bool = False) -> Job:
-    """Chạy toàn bộ pipeline từ đầu đến cuối."""
+def run_pipeline(image_path: str, speaker: str = "A", custom_ref_audio: str = None, interactive: bool = False) -> Job:
+    """Chạy toàn bộ pipeline từ đầu đến cuối (hỗ trợ giọng clone tùy chọn)."""
     if interactive:
         os.environ["ENABLE_CLI_HUMAN_INTERRUPT"] = "1"
     else:
         os.environ["ENABLE_CLI_HUMAN_INTERRUPT"] = "0"
 
     job_id = f"{datetime.now():%Y%m%d_%H%M%S}_{Path(image_path).stem}"
-    initial_job = Job(job_id=job_id, image_path=image_path, speaker_id=speaker)
+    initial_job = Job(job_id=job_id, image_path=image_path, speaker_id=speaker, custom_ref_audio=custom_ref_audio)
     result_dict_or_job = app_workflow.invoke(initial_job)
 
     if isinstance(result_dict_or_job, Job):
@@ -221,10 +221,10 @@ def run_pipeline(image_path: str, speaker: str = "A", interactive: bool = False)
 
 
 # ---------------- Hàm hỗ trợ Human-in-the-Loop cho Web UI ----------------
-def step_until_human_review(image_path: str, speaker: str = "A") -> Job:
+def step_until_human_review(image_path: str, speaker: str = "A", custom_ref_audio: str = None) -> Job:
     """Chạy từ đầu đến hết A2 rồi dừng để người dùng duyệt trên Web UI."""
     job_id = f"{datetime.now():%Y%m%d_%H%M%S}_{Path(image_path).stem}"
-    job = Job(job_id=job_id, image_path=image_path, speaker_id=speaker)
+    job = Job(job_id=job_id, image_path=image_path, speaker_id=speaker, custom_ref_audio=custom_ref_audio)
     job = a1_vision.run(job)
     if job.status == Status.FAILED:
         return job
@@ -236,8 +236,11 @@ def step_until_human_review(image_path: str, speaker: str = "A") -> Job:
 
 def resume_pipeline_after_review(job: Job, edited_text: str = None,
                                  custom_speech_rate: float = None,
-                                 custom_pitch_shift: float = None) -> Job:
+                                 custom_pitch_shift: float = None,
+                                 custom_ref_audio: str = None) -> Job:
     """Tiếp tục pipeline từ sau khi người dùng duyệt trên Web UI."""
+    if custom_ref_audio:
+        job.custom_ref_audio = custom_ref_audio
     if edited_text:
         job.verified_text = edited_text
     job.status = Status.VERIFIED

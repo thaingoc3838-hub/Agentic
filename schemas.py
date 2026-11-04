@@ -68,6 +68,7 @@ class Job(BaseModel):
     # A1: ảnh
     image_path: str
     speaker_id: str = "A" 
+    custom_ref_audio: Optional[str] = None   # Đường dẫn audio mẫu tự chọn (Zero-shot Voice Cloning)
     preprocessed_path: Optional[str] = None
 
     # A1: OCR
